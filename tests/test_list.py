@@ -5,24 +5,30 @@ from bindings import RedisList
 
 class TestRedisList(object):
 
-    def test_not_iterable(self, r):
+    def test_init_with_not_iterable(self, r):
         with pytest.raises(ValueError):
             RedisList(r, 'a', 1)
 
-    def test_wrong_type(self, r):
+    def test_init_to_wrong_type(self, r):
         r.hset('a', 1, 1)
         with pytest.raises(TypeError):
             RedisList(r, 'a')
 
-    def test_new_values(self, r):
+    def test_init_with_new_values(self, r):
         r_list = RedisList(r, 'a', [1])
         assert r_list.values == [1]
 
-    def test_old_values(self, r):
+    def test_init_with_old_values(self, r):
         r_list = RedisList(r, 'a', [1])
         r_list_2 = RedisList(r, 'a')
         assert r_list.values == r_list_2.values
-        assert r_list != r_list_2
+        assert r_list == r_list_2
+        assert r_list is not r_list_2
+        assert r_list != RedisList(r, 'b')
+
+    def test_disable_pickling(self, r):
+        r_list = RedisList(r, 'a', [1], pickling=False)
+        assert r_list.values == ['1']
 
     def test_append(self, r):
         r_list = RedisList(r, 'a')

@@ -99,6 +99,16 @@ class RedisList(object):
         for value in self.values:
             yield value
 
+    def __eq__(self, other):
+        """ x.__eq__(y) <==> x==y """
+        if isinstance(other, self.__class__):
+            return self.key_name == other.key_name and self.values == other.values
+        return False
+
+    def __ne__(self, other):
+        """ x.__ne__(y) <==> x!=y """
+        return not self.__eq__(other)
+
     def __repr__(self):
         """ x.__repr__() <==> repr(x) """
         return '{0}: {1}'.format(self.__class__.__name__, self.values)
