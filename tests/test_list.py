@@ -47,6 +47,13 @@ class TestRedisList(object):
         with pytest.raises(ValueError):
             r_list.remove(3)
 
+    def test_pop(self, r):
+        r_list = RedisList(r, 'a', [1, 2])
+        assert r_list.pop() == 2
+        r_list.pop()
+        with pytest.raises(IndexError):
+            r_list.pop()
+
     def test_get_item(self, r):
         r_list = RedisList(r, 'a', [1, 2, 1])
         assert r_list[1] == 2

@@ -74,6 +74,18 @@ class RedisList(object):
         if not self.redis.lrem(self.key_name, value, 1):
             raise ValueError('value not in list')
 
+    def pop(self):
+        """
+        L.pop() -> item -- remove and return last item.
+        Raises IndexError if list is empty.
+        """
+        item = self.redis.rpop(self.key_name)
+        if not item:
+            raise IndexError('pop from empty list')
+        if self.pickling:
+            item = loads(item)
+        return item
+
     def __getitem__(self, index):
         """ x.__getitem__(y) <==> x[y] """
         if isinstance(index, int):
