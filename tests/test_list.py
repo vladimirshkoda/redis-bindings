@@ -55,9 +55,10 @@ class TestRedisList(object):
             r_list.pop()
 
     def test_get_item(self, r):
-        r_list = RedisList(r, 'a', [1, 2, 1])
+        r_list = RedisList(r, 'a', [1, 2, 3, 4, 5])
         assert r_list[1] == 2
-        assert r_list[1:2] == [2, 1]
+        assert r_list[1:4] == [2, 3, 4]
+        assert r_list[::2] == [1, 3, 5]
         with pytest.raises(TypeError):
             r_list['a']
 

@@ -94,11 +94,9 @@ class RedisList(object):
                 item = loads(item)
             return item
         elif isinstance(index, slice):
-            start, stop, step = index.indices(len(self))
-            item = self.redis.lrange(self.key_name, start, stop)
-            if self.pickling:
-                item = map(loads, item)
-            return item
+            values = self.values
+            start, stop, step = index.indices(len(values))
+            return values[start:stop:step]
         else:
             raise TypeError('Invalid index type')
 
