@@ -80,7 +80,7 @@ class RedisList(object):
         Raises IndexError if list is empty.
         """
         item = self.redis.rpop(self.key_name)
-        if not item:
+        if item is None:
             raise IndexError('pop from empty list')
         if self.pickling:
             item = loads(item)
@@ -90,6 +90,8 @@ class RedisList(object):
         """ x.__getitem__(y) <==> x[y] """
         if isinstance(index, int):
             item = self.redis.lindex(self.key_name, index)
+            if item is None:
+                raise IndexError('list index out of range')
             if self.pickling:
                 item = loads(item)
             return item
@@ -98,7 +100,7 @@ class RedisList(object):
             start, stop, step = index.indices(len(values))
             return values[start:stop:step]
         else:
-            raise TypeError('Invalid index type')
+            raise TypeError('invalid index type')
 
     def __len__(self):
         """ x.__len__() <==> len(x) """

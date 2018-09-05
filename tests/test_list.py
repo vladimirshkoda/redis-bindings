@@ -54,6 +54,11 @@ class TestRedisList(object):
         with pytest.raises(IndexError):
             r_list.pop()
 
+    def test_pop_without_pickling(self, r):
+        r_list = RedisList(r, 'a', ['', None], pickling=False)
+        assert r_list.pop() == 'None'
+        assert r_list.pop() == ''
+
     def test_get_item(self, r):
         r_list = RedisList(r, 'a', [1, 2, 3, 4, 5])
         assert r_list[1] == 2
@@ -61,6 +66,8 @@ class TestRedisList(object):
         assert r_list[::2] == [1, 3, 5]
         with pytest.raises(TypeError):
             r_list['a']
+        with pytest.raises(IndexError):
+            r_list[5]
 
     def test_len(self, r):
         r_list = RedisList(r, 'a', [1])
