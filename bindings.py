@@ -28,6 +28,15 @@ class RedisList(object):
     """
     Provides basic list bindings for Redis list type. Visit https://redis.io/commands#list
     to have better understanding.
+
+    WARNING!
+
+    Values of the list are immutable, therefore look at the following code:
+    >>> from redis import Redis
+    >>> r_list = RedisList(Redis(), 'a', [{1: 'old_value'}])
+    >>> r_list[0][1] = 'new_value'
+    >>> r_list[0][1]
+    'old_value'
     """
     def __init__(self, redis_connection, key_name, iterable=None, pickling=True):
         self.redis = redis_connection

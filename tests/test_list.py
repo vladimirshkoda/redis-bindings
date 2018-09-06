@@ -87,3 +87,8 @@ class TestRedisList(object):
     def test_repr(self, r):
         r_list = RedisList(r, 'a', [1])
         assert str(r_list) == 'RedisList: [1]'
+
+    def test_changing_object(self, r):
+        r_list = RedisList(r, 'a', [{1: 1}])
+        r_list[0][1] = 2
+        assert r_list[0][1] == 1
