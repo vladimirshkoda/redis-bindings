@@ -69,6 +69,13 @@ class TestRedisList(object):
         with pytest.raises(IndexError):
             r_list[5]
 
+    def test_set_item(self, r):
+        r_list = RedisList(r, 'a', [1])
+        r_list[0] = 2
+        assert r_list[0] == 2
+        with pytest.raises(IndexError):
+            r_list[1] = 1
+
     def test_len(self, r):
         r_list = RedisList(r, 'a', [1])
         assert len(r_list) == 1

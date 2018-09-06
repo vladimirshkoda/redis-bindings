@@ -2,6 +2,7 @@ import cPickle
 import collections
 
 from functools import partial
+from redis import ResponseError
 
 
 REDIS_TYPE_LIST = 'list'
@@ -101,6 +102,20 @@ class RedisList(object):
             return values[start:stop:step]
         else:
             raise TypeError('invalid index type')
+
+    def __setitem__(self, index, value):
+        """ x.__setitem__(index, value) <==> x[index]=value """
+        if not isinstance(index, int):
+            raise TypeError('invalid index type')
+        if self.pickling:
+            value = dumps(value)
+        try:
+            self.redis.lset(self.key_name, index, value)
+        except ResponseError as e:
+            if e.message == 'index out of range':
+                raise IndexError('list assignment index out of range')
+            else:
+                raise e
 
     def __len__(self):
         """ x.__len__() <==> len(x) """
