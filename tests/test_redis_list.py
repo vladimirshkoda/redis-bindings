@@ -101,7 +101,7 @@ def test_repr(r):
     assert str(r_list) == 'RedisList: [1]'
 
 
-def test_changing_object(r):
+def test_object_is_not_changed(r):
     r_list = RedisList(r, 'a', [{1: 1}])
     r_list[0][1] = 2
     assert r_list[0][1] == 1

@@ -31,7 +31,8 @@ class RedisList(object):
 
     WARNING!
 
-    Values of the list are immutable, therefore look at the following code:
+    All the manipulations with list values are being done with their copies, therefore look
+    at the following code:
     >>> from redis import Redis
     >>> r_list = RedisList(Redis(), 'a', [{1: 'old_value'}])
     >>> r_list[0][1] = 'new_value'
