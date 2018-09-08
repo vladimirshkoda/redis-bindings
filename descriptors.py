@@ -1,7 +1,8 @@
 from bindings import loads, dumps
 
 
-class BaseRedisField(object):
+
+class RedisBaseField(object):
     """ Basic Redis descriptor interface. """
     def __init__(self, redis_connection, pickling=True):
         self.redis = redis_connection
