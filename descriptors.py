@@ -1,5 +1,6 @@
-from bindings import loads, dumps
+import collections
 
+from bindings import loads, dumps, RedisList
 
 
 class RedisBaseField(object):
@@ -32,3 +33,19 @@ class RedisBaseField(object):
 
     def __set_name__(self, owner, name):
         self.name = name
+
+
+class RedisListField(RedisBaseField):
+    """ Redis list interface. """
+    def __get__(self, instance, owner):
+        return RedisList(self.redis, self.get_key_name(instance))
+
+    def __set__(self, instance, value):
+        if not isinstance(value, collections.Iterable):
+            raise ValueError('value is not iterable')
+        key_name = self.get_key_name(instance)
+        self.redis.delete(key_name)
+        if value:
+            if self.pickling:
+                value = map(dumps, value)
+            self.redis.rpush(key_name, *value)
