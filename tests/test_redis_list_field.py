@@ -1,10 +1,10 @@
 import pytest
 
 from bindings import RedisList
-from descriptors import RedisListField
+from descriptors import IRedisListField
 
 
-class RedisTestListField(RedisListField):
+class RedisTestListField(IRedisListField):
     def get_key_name(self, instance):
         return 'a'
 

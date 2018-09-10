@@ -3,7 +3,7 @@ import collections
 from bindings import loads, dumps, RedisList
 
 
-class RedisBaseField(object):
+class IRedisField(object):
     """ Basic Redis descriptor interface. """
     def __init__(self, redis_connection, pickling=True):
         self.redis = redis_connection
@@ -35,8 +35,8 @@ class RedisBaseField(object):
         self.name = name
 
 
-class RedisListField(RedisBaseField):
-    """ Redis list interface. """
+class IRedisListField(IRedisField):
+    """ Redis list descriptor interface. """
     def __get__(self, instance, owner):
         return RedisList(self.redis, self.get_key_name(instance))
 
