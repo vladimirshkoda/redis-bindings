@@ -1,4 +1,8 @@
-import cPickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 import collections
 
 from functools import partial
@@ -14,14 +18,14 @@ def loads(value):
     Unpickles value, raises a ValueError in case anything fails.
     """
     try:
-        obj = cPickle.loads(value)
+        obj = pickle.loads(value)
     except Exception as e:
         raise ValueError('Cannot unpickle value', e)
     return obj
 
 
 # Serialize pickle dumps using the highest pickle protocol (binary, by default uses ascii)
-dumps = partial(cPickle.dumps, protocol=cPickle.HIGHEST_PROTOCOL)
+dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class RedisList(object):
@@ -49,7 +53,7 @@ class RedisList(object):
                 iterable = map(dumps, iterable)
             self.redis.rpush(key_name, *iterable)
         else:
-            key_type = self.redis.type(key_name)
+            key_type = self.redis.type(key_name).decode('utf-8')
             if key_type not in (REDIS_TYPE_LIST, REDIS_TYPE_NONE):
                 raise TypeError('Cannot bind to "{0}"'.format(key_type))
         self.key_name = key_name
