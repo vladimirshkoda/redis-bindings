@@ -23,14 +23,14 @@ def test_init_with_old_values(r):
     r_list = RedisList(r, 'a', [1])
     r_list_2 = RedisList(r, 'a')
     assert r_list.values == r_list_2.values
-    assert r_list == r_list_2
+    assert r_list.key_name == r_list_2.key_name
     assert r_list is not r_list_2
     assert r_list != RedisList(r, 'b')
 
 
 def test_disable_pickling(r):
     r_list = RedisList(r, 'a', [1], pickling=False)
-    assert r_list.values == ['1']
+    assert r_list.values == [b'1']
 
 
 def test_append(r):
@@ -63,8 +63,8 @@ def test_pop(r):
 
 def test_pop_without_pickling(r):
     r_list = RedisList(r, 'a', ['', None], pickling=False)
-    assert r_list.pop() == 'None'
-    assert r_list.pop() == ''
+    assert r_list.pop() == b'None'
+    assert r_list.pop() == b''
 
 
 def test_get_item(r):

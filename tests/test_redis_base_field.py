@@ -24,7 +24,7 @@ def test_descriptor_with_existing_value(r):
 def test_disable_pickling(r):
     r_field = RedisTestField(r, pickling=False)
     r_field.__set__(instance=None, value=1)
-    assert r_field.__get__(instance=None, owner=None) == '1'
+    assert r_field.__get__(instance=None, owner=None) == b'1'
 
 
 def test_object_is_not_changed(r):
