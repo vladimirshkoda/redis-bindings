@@ -65,7 +65,7 @@ class RedisList(object):
         values = self.redis.lrange(self.key_name, 0, -1)
         if self.pickling:
             values = map(loads, values)
-        return values
+        return list(values)
 
     def append(self, value):
         """ Append value to the end of list """
@@ -126,7 +126,7 @@ class RedisList(object):
         try:
             self.redis.lset(self.key_name, index, value)
         except ResponseError as e:
-            if e.message == 'index out of range':
+            if str(e) in ('index out of range', 'no such key'):
                 raise IndexError('list assignment index out of range')
             else:
                 raise e
