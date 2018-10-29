@@ -1,4 +1,6 @@
 # redis-bindings
+[![Build Status](https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master)](https://travis-ci.org/vladimirshkoda/redis-bindings)
+
 Provides type bindings to native Redis list and dict for Python.  
 Based on [redis-py](https://github.com/andymccurdy/redis-py).
 
