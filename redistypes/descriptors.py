@@ -1,6 +1,6 @@
 import collections
 
-from bindings import loads, dumps, RedisList
+from .bindings import loads, dumps, RedisList
 
 
 class IRedisField(object):

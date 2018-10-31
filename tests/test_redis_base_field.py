@@ -1,4 +1,4 @@
-from descriptors import IRedisField
+from redistypes.descriptors import IRedisField
 
 
 class RedisTestField(IRedisField):
