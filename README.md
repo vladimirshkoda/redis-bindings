@@ -1,51 +1,74 @@
 # redis-bindings
-[![Build Status](https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master)](https://travis-ci.org/vladimirshkoda/redis-bindings)
+[![Build Status](https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master)](
+https://travis-ci.org/vladimirshkoda/redis-bindings)
 
-Provides type bindings to native Redis list and dict for Python.  
-Based on [redis-py](https://github.com/andymccurdy/redis-py).
+Redis bindings is an attempt to bring Redis types to Python as native ones. It is based on
+[redis-py](https://github.com/andymccurdy/redis-py) and has the following types implemented so far:
 
-## RedisList
-RedisList has the following methods of the usual `list` implemented
-* append
-* extend
-* remove
-* pop
-* \_\_getitem__
-* \_\_setitem__
-* \_\_len__
-* \_\_iter__
-* \_\_eq__
-* \_\_ne__
-* \_\_repr__
-```python
->>> from redis import Redis
->>> from bindings import RedisList
->>> r = RedisList(Redis(), 'a', [1])
->>> r
-RedisList: [1]
->>> r.append(2)
->>> r.values == [1, 2]
-True
->>> r.extend([2])
->>> r
-RedisList: [1, 2, 2]
->>> r.remove(2)
->>> r
-RedisList: [1, 2]
->>> r.pop()
-2
+* [RedisList](https://redis.io/commands#list)
 
-```
-You can use an existing list in Redis, just omitting the init value in constructor.
+Moreover, it provides some Redis descriptor interfaces:
+
+* IRedisField
+* IRedisListField
+
+An example of its usage can be found in [example.py](example.py).
 ```python
->>> r2 = RedisList(Redis(), 'a')
->>> r2
-RedisList: [1]
+from redis import Redis
+from redistypes.descriptors import IRedisField, IRedisListField
+
+
+r_connection = Redis()
+
+
+class RedisField(IRedisField):
+    def __init__(self, name, pickling=True):
+        super(RedisField, self).__init__(
+            redis_connection=r_connection,
+            pickling=pickling
+        )
+        self.name = name
+
+    def get_key_name(self, instance):
+        return ':'.join([
+            instance.__class__.__name__, str(instance.pk), self.name
+        ])
+
+
+class RedisListField(IRedisListField, RedisField):
+    pass
+
+
+class Student(object):
+    name = RedisField('name')
+    subjects = RedisListField('subjects')
+
+    def __init__(self, pk):
+        self.pk = pk
 ```
-WARNING! Values in the list are immutable.
+
+The `Student` class defined above can do the following things:
+
 ```python
->>> r_list = RedisList(Redis(), 'a', [{1: 'old_value'}])
->>> r_list[0][1] = 'new_value'
->>> r_list[0][1]
-'old_value'
+from example import Student
+
+
+s = Student(pk=1)
+s.name = 'John Galt'
+s.subjects = ['math', 'physics']
+
+print(s.name)  # John Galt
+print(s.subjects)  # RedisList: ['math', 'physics']
+
+s.subjects.append('p.e.')
+print(s.subjects)  # RedisList: ['math', 'physics', 'p.e.']
+
+s.subjects.append({'name': 'art', 'avg_score': 4.5})
+print(s.subjects[3])  # {'avg_score': 4.5, 'name': 'art'}
+s.subjects[3]['avg_score'] = 3
+print(s.subjects[3])  # {'avg_score': 4.5, 'name': 'art'}
 ```
+
+### Warning!
+All values stored in the Redis types are immutable! As the example above shows, an attempt to change the value stored
+in the dictionary inside the RedisList leads to nothing.

@@ -1,16 +1,17 @@
 from redis import Redis
-from descriptors import IRedisField, IRedisListField
+from redistypes.descriptors import IRedisField, IRedisListField
 
 
 r_connection = Redis()
 
 
 class RedisField(IRedisField):
-    def __init__(self, pickling=True):
+    def __init__(self, name, pickling=True):
         super(RedisField, self).__init__(
             redis_connection=r_connection,
             pickling=pickling
         )
+        self.name = name
 
     def get_key_name(self, instance):
         return ':'.join([
@@ -18,26 +19,13 @@ class RedisField(IRedisField):
         ])
 
 
-class RedisListField(IRedisListField,
-                     RedisField):
+class RedisListField(IRedisListField, RedisField):
     pass
 
 
-class SetNameMeta(type):
-    def __new__(mcs, name, bases, attrs):
-        cls = super(SetNameMeta, mcs).__new__(mcs, name, bases, attrs)
-        for attr, obj in attrs.items():
-            if isinstance(obj, IRedisField):
-                obj.__set_name__(cls, attr)
-        return cls
-
-
 class Student(object):
-    __metaclass__ = SetNameMeta
-
-    name = RedisField()
-    avg_score = RedisField()
-    subjects = RedisListField()
+    name = RedisField('name')
+    subjects = RedisListField('subjects')
 
     def __init__(self, pk):
         self.pk = pk
