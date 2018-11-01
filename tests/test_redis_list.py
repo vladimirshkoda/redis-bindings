@@ -1,6 +1,6 @@
 import pytest
 
-from redistypes.bindings import RedisList
+from redistypes import RedisList
 
 
 def test_init_with_not_iterable(r):

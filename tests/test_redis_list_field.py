@@ -1,7 +1,6 @@
 import pytest
 
-from redistypes.bindings import RedisList
-from redistypes.descriptors import IRedisListField
+from redistypes import RedisList, IRedisListField
 
 
 class RedisTestListField(IRedisListField):
