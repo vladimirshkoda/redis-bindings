@@ -12,10 +12,11 @@ Moreover, it provides some Redis descriptor interfaces:
 * IRedisField
 * IRedisListField
 
-An example of its usage can be found in [example.py](example.py).
+It is exactly interfaces, because it requires user to override `get_key_name` method to define key name
+for Redis. Here is an example of how it can be implemented (can be found in [example.py](example.py)).
 ```python
 from redis import Redis
-from redistypes.descriptors import IRedisField, IRedisListField
+from redistypes import IRedisField, IRedisListField
 
 
 r_connection = Redis()
@@ -63,6 +64,7 @@ print(s.subjects)  # RedisList: ['math', 'physics']
 s.subjects.append('p.e.')
 print(s.subjects)  # RedisList: ['math', 'physics', 'p.e.']
 
+# Values stored inside the Redis types are immutable!
 s.subjects.append({'name': 'art', 'avg_score': 4.5})
 print(s.subjects[3])  # {'avg_score': 4.5, 'name': 'art'}
 s.subjects[3]['avg_score'] = 3
