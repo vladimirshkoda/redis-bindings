@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master)](
 https://travis-ci.org/vladimirshkoda/redis-bindings)
 
-Redis bindings is an attempt to bring Redis types to Python as native ones. It is based on
+Redis bindings is an attempt to bring Redis types into Python as native ones. It is based on
 [redis-py](https://github.com/andymccurdy/redis-py) and has the following types implemented so far:
 
 * [RedisList](https://redis.io/commands#list)
@@ -72,5 +72,11 @@ print(s.subjects[3])  # {'avg_score': 4.5, 'name': 'art'}
 ```
 
 ### Warning!
-All values stored in the Redis types are immutable! As the example above shows, an attempt to change the value stored
+All values stored inside the Redis types are immutable! As the example above shows, an attempt to change the value stored
 in the dictionary inside the RedisList leads to nothing.
+
+### Roadmap
+
+* Python3 support
+* Querying over the pipe
+* RedisDict
