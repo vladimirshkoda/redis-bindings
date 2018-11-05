@@ -77,6 +77,6 @@ in the dictionary inside the RedisList leads to nothing.
 
 ### Roadmap
 
-* Python3 support
+* ~~Python3 support~~
 * Querying over the pipe
 * RedisDict
