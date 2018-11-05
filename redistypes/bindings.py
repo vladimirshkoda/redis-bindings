@@ -1,12 +1,17 @@
-import cPickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 import collections
 
 from functools import partial
 from redis import ResponseError
+from redis._compat import b
 
 
-REDIS_TYPE_LIST = 'list'
-REDIS_TYPE_NONE = 'none'
+REDIS_TYPE_LIST = b('list')
+REDIS_TYPE_NONE = b('none')
 
 
 def loads(value):
@@ -14,14 +19,14 @@ def loads(value):
     Unpickles value, raises a ValueError in case anything fails.
     """
     try:
-        obj = cPickle.loads(value)
+        obj = pickle.loads(value)
     except Exception as e:
         raise ValueError('Cannot unpickle value', e)
     return obj
 
 
 # Serialize pickle dumps using the highest pickle protocol (binary, by default uses ascii)
-dumps = partial(cPickle.dumps, protocol=cPickle.HIGHEST_PROTOCOL)
+dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class RedisList(object):
@@ -60,7 +65,7 @@ class RedisList(object):
         """ Return whole list from Redis """
         values = self.redis.lrange(self.key_name, 0, -1)
         if self.pickling:
-            values = map(loads, values)
+            values = list(map(loads, values))
         return values
 
     def append(self, value):
@@ -122,7 +127,7 @@ class RedisList(object):
         try:
             self.redis.lset(self.key_name, index, value)
         except ResponseError as e:
-            if e.message == 'index out of range':
+            if str(e) == 'index out of range':
                 raise IndexError('list assignment index out of range')
             else:
                 raise e
