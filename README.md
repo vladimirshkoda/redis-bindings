@@ -23,12 +23,11 @@ r_connection = Redis()
 
 
 class RedisField(IRedisField):
-    def __init__(self, name, pickling=True):
+    def __init__(self, pickling=True):
         super(RedisField, self).__init__(
             redis_connection=r_connection,
             pickling=pickling
         )
-        self.name = name
 
     def get_key_name(self, instance):
         return ':'.join([
@@ -36,16 +35,17 @@ class RedisField(IRedisField):
         ])
 
 
-class RedisListField(IRedisListField, RedisField):
+class RedisListField(IRedisListField, Re/disField):
     pass
 
 
-class Student(object):
-    name = RedisField('name')
-    subjects = RedisListField('subjects')
+class Student:
+    name = RedisField()
+    subjects = RedisListField()
 
     def __init__(self, pk):
         self.pk = pk
+
 ```
 
 The `Student` class defined above can do the following things:
