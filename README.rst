@@ -17,9 +17,38 @@ Moreover, it provides some Redis descriptor interfaces:
 It is exactly interfaces, because it requires user to override ``get_key_name`` method to define key name
 for Redis. Here is an example of how it can be implemented (can be found in `example.py <example.py>`_).
 
-.. literalinclude:: example.py
-    :language: python
-    :lineos:
+.. code-block:: python
+
+    from redis import Redis
+    from redistypes import IRedisField, IRedisListField
+
+
+    r_connection = Redis()
+
+
+    class RedisField(IRedisField):
+        def __init__(self, pickling=True):
+            super(RedisField, self).__init__(
+                redis_connection=r_connection,
+                pickling=pickling
+            )
+
+        def get_key_name(self, instance):
+            return ':'.join([
+                instance.__class__.__name__, str(instance.pk), self.name
+            ])
+
+
+    class RedisListField(IRedisListField, RedisField):
+        pass
+
+
+    class Student:
+        name = RedisField()
+        subjects = RedisListField()
+
+        def __init__(self, pk):
+            self.pk = pk
 
 The ``Student`` class defined above can do the following things:
 
@@ -53,6 +82,14 @@ in the dictionary inside the RedisList leads to nothing.
 Roadmap
 -------
 
-* :strike:`Python3 support`
+* |ss| Python3 support` |se|
 * Querying over the pipe
 * RedisDict
+
+.. |ss| raw:: html
+
+    <strike>
+
+.. |se| raw:: html
+
+    </strike>
