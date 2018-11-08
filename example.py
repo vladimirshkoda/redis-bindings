@@ -1,5 +1,5 @@
 from redis import Redis
-from redistypes import IRedisField, IRedisListField
+from redistypes.descriptors import IRedisField, IRedisListField
 
 
 r_connection = Redis()

@@ -1,6 +1,6 @@
 from redis._compat import b
 
-from redistypes import IRedisField
+from redistypes.descriptors import IRedisField
 
 
 class RedisTestField(IRedisField):
