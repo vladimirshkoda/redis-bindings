@@ -85,14 +85,5 @@ RedisList leads to nothing.
 Roadmap
 -------
 
-* |ss| Python3 support |se|
 * Querying over the pipe
 * RedisDict
-
-.. |ss| raw:: html
-
-    <strike>
-
-.. |se| raw:: html
-
-    </strike>

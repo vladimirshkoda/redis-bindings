@@ -7,11 +7,10 @@ import collections
 
 from functools import partial
 from redis import ResponseError
-from redis._compat import b
 
 
-REDIS_TYPE_LIST = b('list')
-REDIS_TYPE_NONE = b('none')
+REDIS_TYPE_LIST = b'list'
+REDIS_TYPE_NONE = b'none'
 
 
 def loads(value):
@@ -87,7 +86,7 @@ class RedisList(object):
         """
         if self.pickling:
             value = dumps(value)
-        if not self.redis.lrem(self.key_name, value, 1):
+        if not self.redis.lrem(self.key_name, 1, value):
             raise ValueError('value not in list')
 
     def pop(self):
