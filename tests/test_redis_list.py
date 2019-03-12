@@ -1,7 +1,5 @@
 import pytest
 
-from redis._compat import b
-
 from redistypes import RedisList
 
 
@@ -32,7 +30,7 @@ def test_init_with_old_values(r):
 
 def test_disable_pickling(r):
     r_list = RedisList(r, 'a', [1], pickling=False)
-    assert r_list.values == [b('1')]
+    assert r_list.values == [b'1']
 
 
 def test_append(r):
@@ -61,12 +59,6 @@ def test_pop(r):
     r_list.pop()
     with pytest.raises(IndexError):
         r_list.pop()
-
-
-def test_pop_without_pickling(r):
-    r_list = RedisList(r, 'a', ['', None], pickling=False)
-    assert r_list.pop() == b('None')
-    assert r_list.pop() == b('')
 
 
 def test_get_item(r):
