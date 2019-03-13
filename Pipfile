@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+flake8 = "==3.6.0"
+wemake-python-styleguide = "==0.7.1"
 
 [packages]
 redis = ">=3.0"
