@@ -8,3 +8,4 @@ install:
   - 'pipenv sync --dev'
 script:
   - 'pipenv run pytest tests'
+  - 'pipenv run flake8 redistypes'

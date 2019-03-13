@@ -2,7 +2,10 @@ redis-bindings
 ==============
 
 .. image:: https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master
-        :target: https://travis-ci.org/vladimirshkoda/redis-bindings
+    :target: https://travis-ci.org/vladimirshkoda/redis-bindings
+
+.. image:: https://img.shields.io/badge/style-wemake-000000.svg
+    :target: https://github.com/wemake-services/wemake-python-styleguide
 
 Redis bindings is an attempt to bring Redis types into Python as native ones. It
 is based on `redis-py <https://github.com/andymccurdy/redis-py>`_ and has the
