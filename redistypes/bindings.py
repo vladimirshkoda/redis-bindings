@@ -5,26 +5,13 @@ So far consists only of RedisList.
 """
 
 import collections
-import pickle
-from functools import partial
 
 from redis import ResponseError
 
+from redistypes.pickling import dumps, loads
+
 REDIS_TYPE_LIST = b'list'
 REDIS_TYPE_NONE = b'none'
-
-
-def loads(value):
-    """Unpickles value, raises a ValueError in case anything fails."""
-    try:
-        obj = pickle.loads(value)
-    except Exception as e:
-        raise ValueError('Cannot unpickle value', e)
-    return obj
-
-
-# Serialize pickle dumps using the highest pickle protocol (binary, by default uses ascii)
-dumps = partial(pickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class RedisList(object):

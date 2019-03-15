@@ -6,7 +6,8 @@ Includes IRedisField, IRedisListField.
 
 import collections
 
-from redistypes.bindings import RedisList, dumps, loads
+from redistypes.bindings import RedisList
+from redistypes.pickling import dumps, loads
 
 
 class IRedisField(object):
