@@ -101,5 +101,4 @@ RedisList leads to nothing.
 Roadmap
 -------
 
-* Querying over the pipe
 * RedisDict
