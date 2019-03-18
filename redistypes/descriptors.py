@@ -46,7 +46,7 @@ class IRedisField(object):
             value = dumps(value)
         self.redis.set(self.get_key_name(instance), value)
 
-    def __delete__(self, instance):  # noqa: Z434
+    def __delete__(self, instance):
         """Delete the attribute on an instance of the owner class."""
         self.redis.delete(self.get_key_name(instance))
 
