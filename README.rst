@@ -4,6 +4,9 @@ redis-bindings
 .. image:: https://travis-ci.org/vladimirshkoda/redis-bindings.svg?branch=master
     :target: https://travis-ci.org/vladimirshkoda/redis-bindings
 
+.. image:: https://badge.fury.io/py/redistypes.svg
+    :target: https://pypi.org/project/redistypes
+
 .. image:: https://img.shields.io/badge/style-wemake-000000.svg
     :target: https://github.com/wemake-services/wemake-python-styleguide
 
@@ -20,7 +23,8 @@ Moreover, it provides some Redis descriptor interfaces:
 
 It is exactly interfaces, because it requires user to override ``get_key_name``
 method to define key name for Redis. Here is an example of how it can be
-implemented (can be found in `example.py <example.py>`_).
+implemented (can be found in `example.py <https://github.com/vladimirshkoda/redis
+-bindings/blob/master/example.py>`_).
 
 .. code-block:: python
 
@@ -37,7 +41,7 @@ implemented (can be found in `example.py <example.py>`_).
         """IRedisField implementation."""
 
         def __init__(self, pickling=True):
-            """Set `r_connection` as the Redis connection pool by default."""
+            """Set ``r_connection`` as the Redis connection pool by default."""
             super().__init__(
                 redis_connection=r_connection,
                 pickling=pickling,
@@ -47,7 +51,7 @@ implemented (can be found in `example.py <example.py>`_).
             """
             Return Redis key name of the attribute.
 
-            It enforces instance using this descriptor to have the `pk` attribute.
+            It enforces instance using this descriptor to have the ``pk`` attribute.
             """
             return ':'.join([
                 instance.__class__.__name__, str(instance.pk), self.name,
@@ -65,7 +69,7 @@ implemented (can be found in `example.py <example.py>`_).
         subjects = RedisListField()
 
         def __init__(self, pk):
-            """Student instance has to be initialized with a primary key `pk`."""
+            """Student instance has to be initialized with a primary key ``pk``."""
             self.pk = pk
 
 The ``Student`` class defined above can do the following things:
