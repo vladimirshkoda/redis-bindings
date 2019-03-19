@@ -174,10 +174,14 @@ class RedisDict(object):
 
     Visit https://redis.io/commands#hash to have better understanding.
 
+    Unlike the dictionary in Python, the Redis hash does not preserve insertion order.
+
     WARNING!
     The value returned by the key lookup is a *copy* of what is in Redis. As such,
     mutating a value in place *will not* be saved back to redis.
     """
+
+    # TODO: pop, update, clear
 
     def __init__(self, redis_connection, key_name, mapping=None, pickling=True):
         """
@@ -220,12 +224,12 @@ class RedisDict(object):
 
     def items(self):
         """Return a new view of the hash’s items as ((key, value) pairs)."""
-        d = self.redis.hgetall(self.key_name)
+        r_dict = self.redis.hgetall(self.key_name)
         if self.pickling:
-            d = {
-                loads(k): loads(v) for k, v in d.items()
+            r_dict = {
+                loads(k): loads(v) for k, v in r_dict.items()
             }
-        return d.items()
+        return r_dict.items()
 
     def keys(self):
         """Return a new view of the hash’s keys."""
@@ -310,3 +314,14 @@ class RedisDict(object):
         This is a shortcut for iter(d.keys()).
         """
         return iter(self.keys())
+
+    def __eq__(self, other):
+        """
+        Compare the hash with other.
+
+        Return True if the hash and the other have the same hash name, or all items
+        of both are equal, else False.
+        """
+        if isinstance(other, self.__class__):
+            return self.key_name == other.key_name or self.items == other.items
+        return False
