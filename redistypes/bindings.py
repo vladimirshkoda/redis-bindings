@@ -325,3 +325,7 @@ class RedisDict(object):
         if isinstance(other, self.__class__):
             return self.key_name == other.key_name or self.items == other.items
         return False
+
+    def __repr__(self):
+        """Return string representation of RedisDict instance."""
+        return '{0}: {1}'.format(self.__class__.__name__, dict(self.items()))
