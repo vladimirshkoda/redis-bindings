@@ -223,26 +223,26 @@ class RedisDict(object):
             return default
 
     def items(self):
-        """Return a new view of the hash’s items as ((key, value) pairs)."""
+        """Return a copy of the hash’s items as ((key, value) pairs)."""
         r_dict = self.redis.hgetall(self.key_name)
         if self.pickling:
             r_dict = {
                 loads(k): loads(v) for k, v in r_dict.items()
             }
-        return r_dict.items()
+        return list(r_dict.items())
 
     def keys(self):
-        """Return a new view of the hash’s keys."""
+        """Return a copy of the hash’s keys."""
         keys = self.redis.hkeys(self.key_name)
         if self.pickling:
-            keys = map(loads, keys)
+            keys = list(map(loads, keys))
         return keys
 
     def values(self):
-        """Return a new view of the hash’s values."""
+        """Return a copy of the hash’s values."""
         values = self.redis.hvals(self.key_name)
         if self.pickling:
-            values = map(loads, values)
+            values = list(map(loads, values))
         return values
 
     def setdefault(self, key, default=None):
