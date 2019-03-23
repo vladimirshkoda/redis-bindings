@@ -165,6 +165,28 @@ class TestLen(object):
         assert bool(redis_dict) is True
 
 
+class TestGetItem(object):
+    """Test __getitem__ method."""
+
+    def test_key_exists(self, redis_dict):
+        """Should return VAL1."""
+        assert redis_dict[KEY_1] == VAL_1
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should raise KeyError."""
+        with pytest.raises(KeyError):
+            redis_dict[KEY_3]
+
+    def test_key_exists_without_pickling(self, redis_dict_without_pickling):
+        """Should return VAL1 in bytes."""
+        assert redis_dict_without_pickling[KEY_1] == VAL_1.encode()
+
+    def test_value_is_none(self, r):
+        """Should return None."""
+        redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME, {KEY_1: None})
+        assert redis_dict[KEY_1] is None
+
+
 class TestKeys(object):
     """Test keys method."""
 
@@ -201,17 +223,17 @@ class TestSetDefault(object):
     """Test setdefault method."""
 
     def test_key_already_exists(self, redis_dict):
-        """Should return already existing value."""
+        """Should return VAL1."""
         assert redis_dict.setdefault(KEY_1, VAL_3) == VAL_1
 
     def test_key_does_not_exist(self, redis_dict):
-        """Should return new value."""
+        """Should return VAL3."""
         assert redis_dict.setdefault(KEY_3, VAL_3) == VAL_3
 
     def test_key_already_exists_without_pickling(self, redis_dict_without_pickling):
-        """Should return already existing value in bytes."""
+        """Should return VAL1 in bytes."""
         assert redis_dict_without_pickling.setdefault(KEY_1, VAL_3) == VAL_1.encode()
 
     def test_key_does_not_exist_without_pickling(self, redis_dict_without_pickling):
-        """Should return new value in bytes."""
+        """Should return VAL3 in bytes."""
         assert redis_dict_without_pickling.setdefault(KEY_3, VAL_3) == VAL_3.encode()
