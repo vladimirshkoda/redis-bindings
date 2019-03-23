@@ -187,6 +187,86 @@ class TestGetItem(object):
         assert redis_dict[KEY_1] is None
 
 
+class TestSetItem(object):
+    """Test __setitem__ method."""
+
+    def test_key_already_exists(self, redis_dict):
+        """Should set VAL3."""
+        redis_dict[KEY_1] = VAL_3
+        assert redis_dict[KEY_1] == VAL_3
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should set VAL3."""
+        redis_dict[KEY_3] = VAL_3
+        assert redis_dict[KEY_3] == VAL_3
+
+    def test_key_already_exists_without_pickling(self, redis_dict_without_pickling):
+        """Should set VAL3 in bytes."""
+        redis_dict_without_pickling[KEY_1] = VAL_3
+        assert redis_dict_without_pickling[KEY_1] == VAL_3.encode()
+
+    def test_key_does_not_exist_without_pickling(self, redis_dict_without_pickling):
+        """Should set VAL3 in bytes."""
+        redis_dict_without_pickling[KEY_3] = VAL_3
+        assert redis_dict_without_pickling[KEY_3] == VAL_3.encode()
+
+
+class TestDelItem(object):
+    """Test __delitem__ method."""
+
+    def test_key_exists(self, redis_dict):
+        """Should remove KEY1."""
+        del redis_dict[KEY_1]
+        with pytest.raises(KeyError):
+            redis_dict[KEY_1]
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should raise KeyError."""
+        with pytest.raises(KeyError):
+            del redis_dict[KEY_3]
+
+    def test_key_exist_without_pickling(self, redis_dict_without_pickling):
+        """Should remove KEY1."""
+        del redis_dict_without_pickling[KEY_1]
+        with pytest.raises(KeyError):
+            redis_dict_without_pickling[KEY_1]
+
+
+def test_iter(redis_dict):
+    """
+    Test __iter__ method.
+
+    Should return keys of redis_dict.
+    """
+    assert list(redis_dict) == redis_dict.keys()
+
+
+class TestEq(object):
+    """Test __eq__ method."""
+
+    OTHER_HASH_NAME = 'other_hash_name'
+
+    def test_instance_of_another_class(self, redis_dict):
+        """Should return False."""
+        assert redis_dict != STR_DICT and not isinstance(STR_DICT, type(redis_dict))
+
+    def test_two_different_redis_dicts(self, r, redis_dict, another_str_dict):
+        """Should return False."""
+        other_redis_dict = RedisDict(r, self.OTHER_HASH_NAME, another_str_dict)
+        assert redis_dict != other_redis_dict and isinstance(other_redis_dict, type(redis_dict))
+
+    def test_equal_key_names(self, r, redis_dict):
+        """Should return True."""
+        other_redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME)
+        assert redis_dict == other_redis_dict and redis_dict.key_name == other_redis_dict.key_name
+
+    def test_equal_items(self, r, redis_dict, str_dict):
+        """Should return True."""
+        other_redis_dict = RedisDict(r, self.OTHER_HASH_NAME, str_dict)
+        assert redis_dict == other_redis_dict and redis_dict.items() == other_redis_dict.items() \
+            and redis_dict.key_name != other_redis_dict.key_name
+
+
 class TestKeys(object):
     """Test keys method."""
 

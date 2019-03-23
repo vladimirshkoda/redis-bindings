@@ -278,12 +278,12 @@ class RedisDict(object):
 
         Raises a KeyError if key is not in the map.
         """
-        orig_key = key
+        original_key = key
         if self.pickling:
             key = dumps(key)
         item = self.redis.hget(self.key_name, key)
         if item is None:
-            raise KeyError(orig_key)
+            raise KeyError(original_key)
         if self.pickling:
             item = loads(item)
         return item
@@ -323,7 +323,7 @@ class RedisDict(object):
         of both are equal, else False.
         """
         if isinstance(other, self.__class__):
-            return self.key_name == other.key_name or self.items == other.items
+            return self.key_name == other.key_name or self.items() == other.items()
         return False
 
     def __repr__(self):
