@@ -2,61 +2,8 @@ import pytest
 
 from redistypes.bindings import RedisDict
 
-REDIS_TEST_KEY_NAME = 'redis_key_name'
-KEY_1, VAL_1 = 'KEY_1', 'VAL_1'
-KEY_2, VAL_2 = 'KEY_2', 'VAL_2'
-KEY_3, VAL_3 = 'KEY_3', 'VAL_3'
-STR_DICT = {KEY_1: VAL_1, KEY_2: VAL_2}
-ANOTHER_STR_DICT = {KEY_3: VAL_3}
-BYTES_DICT = {k.encode(): v.encode() for k, v in STR_DICT.items()}
-
-
-@pytest.fixture
-def str_dict():
-    """Copy of STR_DICT."""
-    return STR_DICT.copy()
-
-
-@pytest.fixture
-def bytes_dict():
-    """Copy of BYTES_DICT."""
-    return BYTES_DICT.copy()
-
-
-@pytest.fixture
-def another_str_dict():
-    """Copy of ANOTHER_STR_DICT."""
-    return ANOTHER_STR_DICT.copy()
-
-
-@pytest.fixture
-def redis_empty_dict(r):
-    """
-    RedisDict bonded to empty hash in Redis.
-
-    RedisDict: {}
-    """
-    return RedisDict(r, REDIS_TEST_KEY_NAME)
-
-
-@pytest.fixture
-def redis_dict(r, str_dict):
-    """
-    RedisDict bonded to STR_DICT hash in Redis.
-
-    RedisDict: {'KEY_1': 'VAL_2', 'KEY_2': 'VAL_2'}
-    """
-    return RedisDict(r, REDIS_TEST_KEY_NAME, str_dict)
-
-
-@pytest.fixture
-def redis_dict_without_pickling(r, str_dict):
-    """
-    RedisDict bonded to BYTES_DICT hash in Redis.
-
-    RedisDict: {b'KEY_1': b'VAL_2', b'KEY_2': b'VAL_2'}
-    """
-    return RedisDict(r, REDIS_TEST_KEY_NAME, str_dict, pickling=False)
+from tests.test_redis_dict.conftest import REDIS_TEST_KEY_NAME, STR_DICT, BYTES_DICT, \
+    KEY_1, KEY_3, VAL_1, VAL_3
 
 
 class TestInit(object):
@@ -119,6 +66,71 @@ class TestInit(object):
 
         redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME, another_str_dict)
         assert redis_dict.items() == list(another_str_dict.items()) != list(str_dict.items())
+
+
+class TestGet(object):
+    """Test get method."""
+
+    def test_key_exists(self, redis_dict):
+        """Should return VAL1."""
+        assert redis_dict.get(KEY_1) == VAL_1
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should return default value."""
+        assert redis_dict.get(KEY_3) is None
+        assert redis_dict.get(KEY_3, VAL_3) == VAL_3
+
+
+class TestKeys(object):
+    """Test keys method."""
+
+    def test_empty_hash(self, redis_empty_dict):
+        """Should return an empty list."""
+        assert redis_empty_dict.keys() == []
+
+    def test_not_empty_hash(self, redis_dict):
+        """Should have the same keys as STR_DICT."""
+        assert redis_dict.keys() == list(STR_DICT.keys())
+
+    def test_not_empty_hash_without_pickling(self, redis_dict_without_pickling):
+        """Should have the same keys as BYTES_DICT."""
+        assert redis_dict_without_pickling.keys() == list(BYTES_DICT.keys())
+
+
+class TestValues(object):
+    """Test items method."""
+
+    def test_empty_hash(self, redis_empty_dict):
+        """Should return an empty list."""
+        assert redis_empty_dict.values() == []
+
+    def test_not_empty_hash(self, redis_dict):
+        """Should have the same values as STR_DICT."""
+        assert redis_dict.values() == list(STR_DICT.values())
+
+    def test_not_empty_hash_without_pickling(self, redis_dict_without_pickling):
+        """Should have the same values as BYTES_DICT."""
+        assert redis_dict_without_pickling.values() == list(BYTES_DICT.values())
+
+
+class TestSetDefault(object):
+    """Test setdefault method."""
+
+    def test_key_already_exists(self, redis_dict):
+        """Should return VAL1."""
+        assert redis_dict.setdefault(KEY_1, VAL_3) == VAL_1
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should return VAL3."""
+        assert redis_dict.setdefault(KEY_3, VAL_3) == VAL_3
+
+    def test_key_already_exists_without_pickling(self, redis_dict_without_pickling):
+        """Should return VAL1 in bytes."""
+        assert redis_dict_without_pickling.setdefault(KEY_1, VAL_3) == VAL_1.encode()
+
+    def test_key_does_not_exist_without_pickling(self, redis_dict_without_pickling):
+        """Should return VAL3 in bytes."""
+        assert redis_dict_without_pickling.setdefault(KEY_3, VAL_3) == VAL_3.encode()
 
 
 class TestContains(object):
@@ -267,53 +279,10 @@ class TestEq(object):
             and redis_dict.key_name != other_redis_dict.key_name
 
 
-class TestKeys(object):
-    """Test keys method."""
+def test_repr(redis_dict):
+    """
+    Test __repr__ method.
 
-    def test_empty_hash(self, redis_empty_dict):
-        """Should return an empty list."""
-        assert redis_empty_dict.keys() == []
-
-    def test_not_empty_hash(self, redis_dict):
-        """Should have the same keys as STR_DICT."""
-        assert redis_dict.keys() == list(STR_DICT.keys())
-
-    def test_not_empty_hash_without_pickling(self, redis_dict_without_pickling):
-        """Should have the same keys as BYTES_DICT."""
-        assert redis_dict_without_pickling.keys() == list(BYTES_DICT.keys())
-
-
-class TestValues(object):
-    """Test items method."""
-
-    def test_empty_hash(self, redis_empty_dict):
-        """Should return an empty list."""
-        assert redis_empty_dict.values() == []
-
-    def test_not_empty_hash(self, redis_dict):
-        """Should have the same values as STR_DICT."""
-        assert redis_dict.values() == list(STR_DICT.values())
-
-    def test_not_empty_hash_without_pickling(self, redis_dict_without_pickling):
-        """Should have the same values as BYTES_DICT."""
-        assert redis_dict_without_pickling.values() == list(BYTES_DICT.values())
-
-
-class TestSetDefault(object):
-    """Test setdefault method."""
-
-    def test_key_already_exists(self, redis_dict):
-        """Should return VAL1."""
-        assert redis_dict.setdefault(KEY_1, VAL_3) == VAL_1
-
-    def test_key_does_not_exist(self, redis_dict):
-        """Should return VAL3."""
-        assert redis_dict.setdefault(KEY_3, VAL_3) == VAL_3
-
-    def test_key_already_exists_without_pickling(self, redis_dict_without_pickling):
-        """Should return VAL1 in bytes."""
-        assert redis_dict_without_pickling.setdefault(KEY_1, VAL_3) == VAL_1.encode()
-
-    def test_key_does_not_exist_without_pickling(self, redis_dict_without_pickling):
-        """Should return VAL3 in bytes."""
-        assert redis_dict_without_pickling.setdefault(KEY_3, VAL_3) == VAL_3.encode()
+    Should return "RedisDict: {'KEY_1': 'VAL_1', 'KEY_2': 'VAL_2'}".
+    """
+    assert str(redis_dict) == '{0}: {1}'.format(type(redis_dict).__name__, STR_DICT)
