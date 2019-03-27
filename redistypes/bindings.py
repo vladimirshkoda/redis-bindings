@@ -14,6 +14,8 @@ REDIS_TYPE_LIST = b'list'
 REDIS_TYPE_HASH = b'hash'
 REDIS_TYPE_NONE = b'none'
 
+DEFAULT = object()
+
 
 class RedisList(object):
     """
@@ -181,8 +183,6 @@ class RedisDict(object):
     mutating a value in place *will not* be saved back to redis.
     """
 
-    # TODO: pop, update, clear
-
     def __init__(self, redis_connection, key_name, mapping=None, pickling=True):
         """
         Initialize RedisDict.
@@ -209,6 +209,14 @@ class RedisDict(object):
                 raise TypeError('Cannot bind to "{0}"'.format(key_type))
         self.key_name = key_name
         self.pickling = pickling
+
+    def clear(self):
+        """Remove all items from the hash."""
+        self.redis.delete(self.key_name)
+
+    def copy(self):
+        """Return a dictionary copy of the hash."""
+        return dict(self.items())
 
     def get(self, key, default=None):
         """
@@ -238,12 +246,28 @@ class RedisDict(object):
             keys = list(map(loads, keys))
         return keys
 
-    def values(self):
-        """Return a copy of the hash’s values."""
-        values = self.redis.hvals(self.key_name)
+    def pop(self, key, default=DEFAULT):
+        """If ``key`` is in the dictionary, remove it and return its value, else return ``default``."""
+        original_key = key
         if self.pickling:
-            values = list(map(loads, values))
-        return values
+            key = dumps(key)
+        pipe = self.redis.pipeline()
+        pipe.hget(self.key_name, key)
+        pipe.hdel(self.key_name, key)
+        item, _ = pipe.execute()
+        if item is None:
+            if default is DEFAULT:
+                raise KeyError(original_key)
+            else:
+                return default
+        else:
+            if self.pickling:
+                item = loads(item)
+            return item
+
+    def popitem(self):
+        """Remove and return a (key, value) pair from the hash."""
+        raise NotImplementedError
 
     def setdefault(self, key, default=None):
         """
@@ -261,6 +285,27 @@ class RedisDict(object):
         if self.pickling:
             item = loads(item)
         return item
+
+    def update(self, other):
+        """
+        Update the dictionary with the key/value pairs from ``other``, overwriting existing keys.
+
+        Return None.
+        """
+        if not isinstance(other, collections.Mapping):
+            raise ValueError('values are not mapping')
+        if self.pickling:
+            other = {
+                dumps(k): dumps(v) for k, v in other.items()
+            }
+        self.redis.hmset(self.key_name, other)
+
+    def values(self):
+        """Return a copy of the hash’s values."""
+        values = self.redis.hvals(self.key_name)
+        if self.pickling:
+            values = list(map(loads, values))
+        return values
 
     def __contains__(self, key):
         """Return True if the hash has a key ``key``, else False."""
