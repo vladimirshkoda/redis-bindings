@@ -7,7 +7,12 @@ from tests.test_redis_dict.conftest import REDIS_TEST_KEY_NAME, STR_DICT, BYTES_
 
 
 class TestInit(object):
-    """Test __init__ method."""
+    """
+    Test ``__init__`` method.
+
+    Since there is no other way to evaluate the result, this test includes also tests
+    for ``values`` and ``copy`` methods.
+    """
 
     def test_init_with_not_mapping_data_type(self, r):
         """Should raise ValueError."""
@@ -68,8 +73,23 @@ class TestInit(object):
         assert redis_dict.items() == list(another_str_dict.items()) != list(str_dict.items())
 
 
+class TestClear(object):
+    """Test ``clear`` method."""
+
+    def test_hash_exists(self, redis_dict):
+        """Should remove all items from the hash."""
+        assert redis_dict.copy() == STR_DICT
+        redis_dict.clear()
+        assert redis_dict.copy() == {}
+
+    def test_hash_does_not_exist(self, redis_empty_dict):
+        """Should remove all items despite of the hash is empty."""
+        redis_empty_dict.clear()
+        assert redis_empty_dict.copy() == {}
+
+
 class TestGet(object):
-    """Test get method."""
+    """Test ``get`` method."""
 
     def test_key_exists(self, redis_dict):
         """Should return VAL1."""
@@ -82,7 +102,7 @@ class TestGet(object):
 
 
 class TestKeys(object):
-    """Test keys method."""
+    """Test ``keys`` method."""
 
     def test_empty_hash(self, redis_empty_dict):
         """Should return an empty list."""
@@ -97,8 +117,77 @@ class TestKeys(object):
         assert redis_dict_without_pickling.keys() == list(BYTES_DICT.keys())
 
 
+class TestPop(object):
+    """Test ``pop`` method."""
+
+    def test_key_exists(self, redis_dict):
+        """Should return VAL_1 and remove KEY_1 from the hash."""
+        assert redis_dict.pop(KEY_1) == VAL_1
+        assert KEY_1 not in redis_dict
+
+    def test_key_does_not_exist(self, redis_dict):
+        """Should raise KeyError."""
+        with pytest.raises(KeyError):
+            redis_dict.pop(KEY_3)
+
+    def test_key_exists_with_default(self, redis_dict):
+        """Should return VAL_1 and remove KEY_1 from the hash."""
+        assert redis_dict.pop(KEY_1, VAL_3) == VAL_1
+
+    def test_key_does_not_exist_with_default(self, redis_dict):
+        """Should return VAL_3."""
+        assert redis_dict.pop(KEY_3, VAL_3) == VAL_3
+
+    def test_key_exists_without_pickling(self, redis_dict_without_pickling):
+        """Should return VAL_1 in bytes."""
+        assert redis_dict_without_pickling.pop(KEY_1) == VAL_1.encode()
+
+
+def test_popitem(redis_dict):
+    """
+    Test ``popitem`` method.
+
+    Should raise NotImplementedError.
+    """
+    with pytest.raises(NotImplementedError):
+        redis_dict.popitem()
+
+
+class TestUpdate(object):
+    """Test ``update`` method."""
+
+    def test_keys_are_not_overridden(self, redis_dict, str_dict, another_str_dict):
+        """Should be equal to the merge of STR_DICT and ANOTHER_STR_DICT."""
+        redis_dict.update(another_str_dict)
+        assert redis_dict.copy() == {**str_dict, **another_str_dict}
+
+    def test_keys_are_overridden(self, redis_dict, str_dict):
+        """Should override KEY_1 value."""
+        another_str_dict = {KEY_1: VAL_3}
+        redis_dict.update(another_str_dict)
+        str_dict.update(another_str_dict)
+        assert redis_dict.copy() == str_dict
+
+    def test_update_without_pickling(
+        self,
+        redis_dict_without_pickling,
+        bytes_dict,
+        another_str_dict
+    ):
+        """Should be equal to the merge of BYTES_DICT and encoded ANOTHER_STR_DICT."""
+        redis_dict_without_pickling.update(another_str_dict)
+        assert redis_dict_without_pickling.copy() == {
+            KEY_3.encode(): VAL_3.encode(), **bytes_dict
+        }
+
+    def test_other_is_not_mapping(self, redis_dict):
+        """"Should raise ValueError."""
+        with pytest.raises(ValueError):
+            redis_dict.update(1)
+
+
 class TestValues(object):
-    """Test items method."""
+    """Test ``items`` method."""
 
     def test_empty_hash(self, redis_empty_dict):
         """Should return an empty list."""
@@ -114,7 +203,7 @@ class TestValues(object):
 
 
 class TestSetDefault(object):
-    """Test setdefault method."""
+    """Test ``setdefault`` method."""
 
     def test_key_already_exists(self, redis_dict):
         """Should return VAL1."""
@@ -134,7 +223,7 @@ class TestSetDefault(object):
 
 
 class TestContains(object):
-    """Test __contains__ method."""
+    """Test ``__contains__`` method."""
 
     def test_empty_hash(self, redis_empty_dict):
         """
@@ -156,7 +245,7 @@ class TestContains(object):
 
 
 class TestLen(object):
-    """Test __len__ method."""
+    """Test ``__len__`` method."""
 
     def test_empty_hash(self, redis_empty_dict):
         """
@@ -178,7 +267,7 @@ class TestLen(object):
 
 
 class TestGetItem(object):
-    """Test __getitem__ method."""
+    """Test ``__getitem__`` method."""
 
     def test_key_exists(self, redis_dict):
         """Should return VAL1."""
@@ -200,7 +289,7 @@ class TestGetItem(object):
 
 
 class TestSetItem(object):
-    """Test __setitem__ method."""
+    """Test ``__setitem__`` method."""
 
     def test_key_already_exists(self, redis_dict):
         """Should set VAL3."""
@@ -224,7 +313,7 @@ class TestSetItem(object):
 
 
 class TestDelItem(object):
-    """Test __delitem__ method."""
+    """Test ``__delitem__`` method."""
 
     def test_key_exists(self, redis_dict):
         """Should remove KEY1."""
@@ -246,7 +335,7 @@ class TestDelItem(object):
 
 def test_iter(redis_dict):
     """
-    Test __iter__ method.
+    Test ``__iter__`` method.
 
     Should return keys of redis_dict.
     """
@@ -254,7 +343,7 @@ def test_iter(redis_dict):
 
 
 class TestEq(object):
-    """Test __eq__ method."""
+    """Test ``__eq__`` method."""
 
     OTHER_HASH_NAME = 'other_hash_name'
 
@@ -281,7 +370,7 @@ class TestEq(object):
 
 def test_repr(redis_dict):
     """
-    Test __repr__ method.
+    Test ``__repr__`` method.
 
     Should return "RedisDict: {'KEY_1': 'VAL_1', 'KEY_2': 'VAL_2'}".
     """
