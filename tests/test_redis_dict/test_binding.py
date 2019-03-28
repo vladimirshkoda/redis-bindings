@@ -1,9 +1,9 @@
 import pytest
 
-from redistypes.bindings import RedisDict
+from redistypes import RedisDict
 
-from tests.test_redis_dict.conftest import REDIS_TEST_KEY_NAME, STR_DICT, BYTES_DICT, \
-    KEY_1, KEY_3, VAL_1, VAL_3
+from tests.conftest import REDIS_TEST_KEY_NAME, VAL_1, VAL_3
+from tests.test_redis_dict.conftest import STR_DICT, BYTES_DICT, KEY_1, KEY_3
 
 
 class TestInit(object):

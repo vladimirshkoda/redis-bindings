@@ -1,12 +1,12 @@
 import pytest
 
-from redistypes.bindings import RedisDict
+from redistypes import RedisDict
 
+from tests.conftest import REDIS_TEST_KEY_NAME, VAL_1, VAL_2, VAL_3
 
-REDIS_TEST_KEY_NAME = 'redis_key_name'
-KEY_1, VAL_1 = 'KEY_1', 'VAL_1'
-KEY_2, VAL_2 = 'KEY_2', 'VAL_2'
-KEY_3, VAL_3 = 'KEY_3', 'VAL_3'
+KEY_1 = 'KEY_1'
+KEY_2 = 'KEY_2'
+KEY_3 = 'KEY_3'
 STR_DICT = {KEY_1: VAL_1, KEY_2: VAL_2}
 ANOTHER_STR_DICT = {KEY_3: VAL_3}
 BYTES_DICT = {k.encode(): v.encode() for k, v in STR_DICT.items()}

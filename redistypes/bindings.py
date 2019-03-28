@@ -1,14 +1,14 @@
 """
 Redis type bindings.
 
-So far consists only of RedisList.
+Includes RedisList and RedisDict.
 """
 
 import collections
 
 from redis import ResponseError
 
-from redistypes.pickling import dumps, loads
+from .pickling import dumps, loads
 
 REDIS_TYPE_LIST = b'list'
 REDIS_TYPE_HASH = b'hash'
@@ -53,19 +53,15 @@ class RedisList(object):
         self.key_name = key_name
         self.pickling = pickling
 
-    @property
-    def values(self):
-        """Return whole list from Redis."""
-        values = self.redis.lrange(self.key_name, 0, -1)
-        if self.pickling:
-            values = list(map(loads, values))
-        return values
-
     def append(self, value):
         """Append value to the end of list."""
         if self.pickling:
             value = dumps(value)
         self.redis.rpush(self.key_name, value)
+
+    def copy(self):
+        """Return a copy of the list."""
+        return list(self)
 
     def extend(self, iterable):
         """Extend list by appending elements from the iterable."""
@@ -97,6 +93,10 @@ class RedisList(object):
             item = loads(item)
         return item
 
+    def __contains__(self, item):
+        """Return True if the list has an item ``item``, else False."""
+        return item in list(self)
+
     def __getitem__(self, index):
         """
         Get item by index, or slice from list.
@@ -111,9 +111,9 @@ class RedisList(object):
                 item = loads(item)
             return item
         elif isinstance(index, slice):
-            values = self.values
-            start, stop, step = index.indices(len(values))
-            return values[start:stop:step]
+            items = list(self)
+            start, stop, step = index.indices(len(items))
+            return items[start:stop:step]
         else:
             raise TypeError('invalid index type')
 
@@ -148,8 +148,10 @@ class RedisList(object):
 
         x.__iter__() <==> iter(x)
         """
-        for value in self.values:
-            yield value
+        items = self.redis.lrange(self.key_name, 0, -1)
+        if self.pickling:
+            items = list(map(loads, items))
+        return iter(items)
 
     def __eq__(self, other):
         """
@@ -158,7 +160,7 @@ class RedisList(object):
         x.__eq__(y) <==> x==y
         """
         if isinstance(other, self.__class__):
-            return self.key_name == other.key_name and self.values == other.values
+            return self.key_name == other.key_name or list(self) == list(other)
         return False
 
     def __repr__(self):
@@ -167,7 +169,7 @@ class RedisList(object):
 
         x.__repr__() <==> repr(x)
         """
-        return '{0}: {1}'.format(self.__class__.__name__, self.values)
+        return '{0}: {1}'.format(self.__class__.__name__, list(self))
 
 
 class RedisDict(object):
@@ -215,7 +217,7 @@ class RedisDict(object):
         self.redis.delete(self.key_name)
 
     def copy(self):
-        """Return a dictionary copy of the hash."""
+        """Return a copy of the hash."""
         return dict(self.items())
 
     def get(self, key, default=None):
@@ -269,7 +271,11 @@ class RedisDict(object):
             return item
 
     def popitem(self):
-        """Remove and return a (key, value) pair from the hash."""
+        """
+        Remove and return a (key, value) pair from the hash.
+
+        Cannot be implemented by Redis means.
+        """
         raise NotImplementedError
 
     def setdefault(self, key, default=None):
