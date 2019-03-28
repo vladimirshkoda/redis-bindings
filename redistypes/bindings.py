@@ -247,7 +247,11 @@ class RedisDict(object):
         return keys
 
     def pop(self, key, default=DEFAULT):
-        """If ``key`` is in the dictionary, remove it and return its value, else return ``default``."""
+        """
+        If ``key`` is in the dictionary, remove it and return its value.
+
+        If not, return ``default``.
+        """
         original_key = key
         if self.pickling:
             key = dumps(key)
@@ -258,8 +262,7 @@ class RedisDict(object):
         if item is None:
             if default is DEFAULT:
                 raise KeyError(original_key)
-            else:
-                return default
+            return default
         else:
             if self.pickling:
                 item = loads(item)
