@@ -15,13 +15,14 @@ is based on `redis-py <https://github.com/andymccurdy/redis-py>`_ and has the
 following types implemented so far:
 
 * `RedisList <https://redis.io/commands#list>`_
+* `RedisDict <https://redis.io/commands#hash>`_
 
-Moreover, it provides some Redis descriptor interfaces:
+Moreover, it provides some abstract classes as Redis descriptors:
 
 * IRedisField
 * IRedisListField
 
-It is exactly interfaces, because it requires user to override ``get_key_name``
+The classes are abstract because it requires user to override ``get_key_name``
 method to define key name for Redis. Here is an example of how it can be
 implemented (can be found in `example.py <https://github.com/vladimirshkoda/redis
 -bindings/blob/master/example.py>`_).
@@ -72,7 +73,7 @@ implemented (can be found in `example.py <https://github.com/vladimirshkoda/redi
             """Student instance has to be initialized with a primary key ``pk``."""
             self.pk = pk
 
-The ``Student`` class defined above can do the following things:
+The defined above ``Student`` class have the following behaviour:
 
 .. code-block:: pycon
 
@@ -87,7 +88,7 @@ The ``Student`` class defined above can do the following things:
     >>> s.subjects.append('p.e.')
     >>> s.subjects
     RedisList: ['math', 'physics', 'p.e.']
-    >>> # Values stored inside the Redis types are immutable!
+    >>> # Values stored inside the Redis data structures are immutable!
     >>> s.subjects.append({'name': 'art', 'avg_score': 4.5})
     >>> s.subjects[3]
     {'avg_score': 4.5, 'name': 'art'}
@@ -98,11 +99,6 @@ The ``Student`` class defined above can do the following things:
 Warning!
 --------
 
-All values stored inside the Redis types are immutable! As the example above
+All values stored inside the Redis data structures are immutable! As the example above
 shows, an attempt to change the value stored in the dictionary inside the
 RedisList leads to nothing.
-
-Roadmap
--------
-
-* RedisDict
