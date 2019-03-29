@@ -11,18 +11,13 @@ class TestInit(object):
     Test ``__init__`` method.
 
     Since there is no other way to evaluate the result, this test includes also tests
-    for ``values`` and ``copy`` methods.
+    for ``copy`` and, as a result, ``items`` methods.
     """
 
     def test_init_with_not_mapping_data_type(self, r):
         """Should raise ValueError."""
-        # Test int
         with pytest.raises(ValueError):
             RedisDict(r, REDIS_TEST_KEY_NAME, 1)
-
-        # Test list
-        with pytest.raises(ValueError):
-            RedisDict(r, REDIS_TEST_KEY_NAME, [1, 2])
 
     def test_bind_to_string(self, r):
         """Should raise TypeError."""
@@ -37,19 +32,19 @@ class TestInit(object):
             RedisDict(r, REDIS_TEST_KEY_NAME)
 
     def test_bind_to_none(self, r):
-        """Should be initialized as an empty hash."""
+        """Should be equal to empty dictionary."""
         redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME)
-        assert redis_dict.items() == []
+        assert redis_dict.copy() == {}
 
     def test_bind_to_hash(self, r, bytes_dict):
-        """Should have the same items as BYTES_DICT."""
+        """Should be equal to BYTES_DICT."""
         r.hmset(REDIS_TEST_KEY_NAME, bytes_dict)
         redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME, pickling=False)
-        assert redis_dict.items() == list(BYTES_DICT.items())
+        assert redis_dict.copy() == BYTES_DICT
 
     def test_init_with_mapping(self, redis_dict):
-        """Should have the same items as STR_DICT."""
-        assert redis_dict.items() == list(STR_DICT.items())
+        """Should be equal to STR_DICT."""
+        assert redis_dict.copy() == STR_DICT
 
     def test_init_with_disabled_pickling(self, redis_dict_without_pickling):
         """
@@ -58,7 +53,7 @@ class TestInit(object):
         With pickling=False, should have the same items as BYTES_DICT, despite of
         it was initialized with STR_DICT.
         """
-        assert redis_dict_without_pickling.items() == list(BYTES_DICT.items())
+        assert redis_dict_without_pickling.copy() == BYTES_DICT
 
     def test_override_previous_hash(self, r, str_dict, another_str_dict):
         """
@@ -67,10 +62,10 @@ class TestInit(object):
         Despite of it was initialized with STR_DICT.
         """
         redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME, str_dict)
-        assert redis_dict.items() == list(str_dict.items())
+        assert redis_dict.copy() == STR_DICT
 
         redis_dict = RedisDict(r, REDIS_TEST_KEY_NAME, another_str_dict)
-        assert redis_dict.items() == list(another_str_dict.items()) != list(str_dict.items())
+        assert redis_dict.copy() == another_str_dict != str_dict
 
 
 class TestClear(object):
