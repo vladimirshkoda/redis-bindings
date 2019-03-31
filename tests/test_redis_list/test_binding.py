@@ -2,41 +2,78 @@ import pytest
 
 from redistypes import RedisList
 
-
-def test_init_with_not_iterable(r):
-    with pytest.raises(ValueError):
-        RedisList(r, 'a', 1)
+from tests.conftest import REDIS_TEST_KEY_NAME, VAL_3
 
 
-def test_init_to_wrong_type(r):
-    r.hset('a', 1, 1)
-    with pytest.raises(TypeError):
-        RedisList(r, 'a')
+class TestInit(object):
+    """Test ``__init__`` method."""
+
+    def test_init_with_not_iterable_data_type(self, r):
+        """Should raise ValueError."""
+        with pytest.raises(ValueError):
+            RedisList(r, REDIS_TEST_KEY_NAME, 1)
+
+    def test_bind_to_wrong_type(self, r):
+        """Should raise TypeError."""
+        r.set(REDIS_TEST_KEY_NAME, 1)
+        with pytest.raises(TypeError):
+            RedisList(r, REDIS_TEST_KEY_NAME)
+
+    def test_bind_to_none(self, r):
+        """Should be equal to empty string."""
+        redis_list = RedisList(r, REDIS_TEST_KEY_NAME)
+        assert list(redis_list) == []
+
+    def test_bind_to_existing_list(self, r, bytes_list):
+        """
+        Should be equal to bytes_list.
+
+        Since the items are stored in the Redis as bytes, pickling is disabled.
+        """
+        r.rpush(REDIS_TEST_KEY_NAME, *bytes_list)
+        redis_list = RedisList(r, REDIS_TEST_KEY_NAME, pickling=False)
+        assert list(redis_list) == bytes_list
+
+    def test_init_with_iterable(self, redis_list, str_list):
+        """Should be equal to str_list."""
+        assert list(redis_list) == str_list
+
+    def test_init_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """
+        Should be equal to bytes_list.
+
+        With pickling=False, should be equal to bytes_list, despite of it was initialized
+        with str_list.
+        """
+        assert list(redis_list_without_pickling) == bytes_list
+
+    def test_override_previous_list(self, r, str_list, another_str_list):
+        """
+        Should be equal to another_str_list.
+
+        Despite of it was initialized with str_list.
+        """
+        redis_list = RedisList(r, REDIS_TEST_KEY_NAME, str_list)
+        assert list(redis_list) == str_list
+
+        redis_list = RedisList(r, REDIS_TEST_KEY_NAME, another_str_list)
+        assert list(redis_list) == another_str_list != str_list
 
 
-def test_init_with_new_values(r):
-    r_list = RedisList(r, 'a', [1])
-    assert list(r_list) == [1]
+class TestAppend(object):
+    """Test ``append`` method."""
 
+    def test_append(self, redis_list, str_list):
+        """Should be equal to updated str_list."""
+        redis_list.append(VAL_3)
+        str_list.append(VAL_3)
+        assert list(redis_list) == list(str_list)
 
-def test_init_with_old_values(r):
-    r_list = RedisList(r, 'a', [1])
-    r_list_2 = RedisList(r, 'a')
-    assert list(r_list) == list(r_list_2)
-    assert r_list == r_list_2
-    assert r_list is not r_list_2
-    assert r_list != RedisList(r, 'b')
-
-
-def test_disable_pickling(r):
-    r_list = RedisList(r, 'a', [1], pickling=False)
-    assert list(r_list) == [b'1']
-
-
-def test_append(r):
-    r_list = RedisList(r, 'a')
-    r_list.append(1)
-    assert list(r_list) == [1]
+    def test_append_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """Should be equal to updated bytes_list."""
+        redis_list_without_pickling.append(VAL_3)
+        bytes_list.append(VAL_3.encode())
+        assert list(redis_list_without_pickling) == bytes_list
 
 
 def test_extend(r):
