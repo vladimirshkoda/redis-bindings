@@ -32,8 +32,7 @@ implemented (can be found in `example.py <https://github.com/vladimirshkoda/redi
     """An example of the Redis descriptors usage."""
 
     from redis import Redis
-
-    from redistypes.descriptors import IRedisField, IRedisListField
+    from redistypes import IRedisField, IRedisListField
 
     r_connection = Redis()
 
@@ -69,36 +68,59 @@ implemented (can be found in `example.py <https://github.com/vladimirshkoda/redi
         name = RedisField()
         subjects = RedisListField()
 
-        def __init__(self, pk):
+        def __init__(self, pk, name=None, subjects=None):
             """Student instance has to be initialized with a primary key ``pk``."""
             self.pk = pk
+            if name:
+                self.name = name
+            if subjects:
+                self.subjects = subjects
 
-The defined above ``Student`` class have the following behaviour:
+The defined above ``Student`` model has the following behaviour:
 
 .. code-block:: pycon
 
     >>> from example import Student
-    >>> s = Student(pk=1)
-    >>> s.name = 'John Galt'
-    >>> s.subjects = ['math', 'physics']
-    >>> s.name
+    >>> student = Student(pk=1, name='John Galt', subjects=['math', 'physics'])
+    >>> student.name
     John Galt
-    >>> s.subjects
+    >>> student.subjects
     RedisList: ['math', 'physics']
-    >>> s.subjects.append('p.e.')
-    >>> s.subjects
+    >>> student.subjects.append('p.e.')
+    >>> student.subjects
     RedisList: ['math', 'physics', 'p.e.']
-    >>> # Values stored inside the Redis data structures are immutable!
-    >>> s.subjects.append({'name': 'art', 'avg_score': 4.5})
-    >>> s.subjects[3]
-    {'avg_score': 4.5, 'name': 'art'}
-    >>> s.subjects[3]['avg_score'] = 3
-    >>> s.subjects[3]
-    {'avg_score': 4.5, 'name': 'art'}
+    >>> student.subjects[-1] = 'art'
+    >>> student.subjects
+    RedisList: ['math', 'physics', 'art']
+
+Let's check what keys we've got in Redis:
+
+.. code-block:: pycon
+
+    >>> from redis import Redis
+    >>> r = Redis()
+    >>> r.keys()
+    [b'Student:1:name', b'Student:1:subjects']
 
 Warning!
 --------
 
-All values stored inside the Redis data structures are immutable! As the example above
-shows, an attempt to change the value stored in the dictionary inside the
-RedisList leads to nothing.
+As you saw above, we are able to change items of the RedisList, e.g. replace one subject
+with another by index. But what if we set list value to the regular field? Let's replace
+name of the student with list consisting of the first name and the last name.
+
+.. code-block:: pycon
+
+    >>> student.name = ['John', 'Galt']
+    >>> student.name
+    ['John', 'Galt']
+    >>> student.name[-1] = 'Smith'
+    >>> student.name
+    ['John', 'Galt']
+
+In that way, we changed the name value from string to list of two items, but since
+``name`` is a simple RedisField keeping all value as string in Redis, we are not
+able to modify stored items themselves.
+**All values stored inside the Redis data structures are immutable!**
+As the example above shows, index lookup from the list stored as string in redis will
+return a copy of the item.

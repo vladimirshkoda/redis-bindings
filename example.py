@@ -1,8 +1,7 @@
 """An example of the Redis descriptors usage."""
 
 from redis import Redis
-
-from redistypes.descriptors import IRedisField, IRedisListField
+from redistypes import IRedisField, IRedisListField
 
 r_connection = Redis()
 
@@ -38,6 +37,10 @@ class Student(object):
     name = RedisField()
     subjects = RedisListField()
 
-    def __init__(self, pk):
+    def __init__(self, pk, name=None, subjects=None):
         """Student instance has to be initialized with a primary key ``pk``."""
         self.pk = pk
+        if name:
+            self.name = name
+        if subjects:
+            self.subjects = subjects
