@@ -2,7 +2,12 @@ import pytest
 
 from redistypes import RedisList
 
-from tests.conftest import REDIS_TEST_KEY_NAME, VAL_3
+from tests.conftest import (
+    REDIS_TEST_KEY_NAME,
+    VAL_1,
+    VAL_2,
+    VAL_3,
+)
 
 
 class TestInit(object):
@@ -76,18 +81,52 @@ class TestAppend(object):
         assert list(redis_list_without_pickling) == bytes_list
 
 
-def test_extend(r):
-    r_list = RedisList(r, 'a')
-    r_list.extend([1, 2])
-    assert list(r_list) == [1, 2]
+class TestExtend(object):
+    """Test ``extend`` method."""
+
+    def test_extend(self, redis_list, str_list, another_str_list):
+        """Should be equal to str_list extended by another_str_list."""
+        redis_list.extend(another_str_list)
+        str_list.extend(another_str_list)
+        assert list(redis_list) == str_list
+
+    def test_extend_without_pickling(
+        self,
+        redis_list_without_pickling,
+        bytes_list,
+        another_str_list,
+    ):
+        """Should be equal to bytes_dict extended by encoded another_str_list."""
+        redis_list_without_pickling.extend(another_str_list)
+        bytes_list.extend([item.encode() for item in another_str_list])
+        assert list(redis_list_without_pickling) == bytes_list
 
 
-def test_remove(r):
-    r_list = RedisList(r, 'a', [1, 2, 1])
-    r_list.remove(1)
-    assert list(r_list) == [2, 1]
-    with pytest.raises(ValueError):
-        r_list.remove(3)
+class TestRemove(object):
+    """Test ``remove`` method."""
+
+    def test_single_item(self, redis_list, str_list):
+        """Should remove a single item."""
+        redis_list.remove(VAL_1)
+        str_list.remove(VAL_1)
+        assert list(redis_list) == str_list
+
+    def test_duplicated_item(self, redis_list, str_list):
+        """Should remove one of two equal items."""
+        redis_list.remove(VAL_2)
+        str_list.remove(VAL_2)
+        assert list(redis_list) == str_list
+
+    def test_nonexistent_item(self, redis_list):
+        """Should raise ValueError."""
+        with pytest.raises(ValueError):
+            redis_list.remove(VAL_3)
+
+    def test_single_item_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """Should remove a single encoded item."""
+        redis_list_without_pickling.remove(VAL_1)
+        bytes_list.remove(VAL_1.encode())
+        assert list(redis_list_without_pickling) == bytes_list
 
 
 def test_pop(r):
