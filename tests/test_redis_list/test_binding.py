@@ -1,4 +1,5 @@
 import pytest
+import random
 
 from redistypes import RedisList
 
@@ -129,23 +130,51 @@ class TestRemove(object):
         assert list(redis_list_without_pickling) == bytes_list
 
 
-def test_pop(r):
-    r_list = RedisList(r, 'a', [1, 2])
-    assert r_list.pop() == 2
-    r_list.pop()
-    with pytest.raises(IndexError):
-        r_list.pop()
+class TestPop(object):
+    """Test ``pop`` method."""
+
+    def test_pop_from_empty_list(self, redis_empty_list):
+        """Should raise IndexError."""
+        with pytest.raises(IndexError):
+            redis_empty_list.pop()
+
+    def test_pop(self, redis_list, str_list):
+        """Should remove and return the same item as str_list does."""
+        assert redis_list.pop() == str_list.pop()
+        assert list(redis_list) == str_list
+
+    def test_pop_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """Should remove and return the same item as bytes_list does."""
+        assert redis_list_without_pickling.pop() == bytes_list.pop()
+        assert list(redis_list_without_pickling) == bytes_list
 
 
-def test_get_item(r):
-    r_list = RedisList(r, 'a', [1, 2, 3, 4, 5])
-    assert r_list[1] == 2
-    assert r_list[1:4] == [2, 3, 4]
-    assert r_list[::2] == [1, 3, 5]
-    with pytest.raises(TypeError):
-        r_list['a']
-    with pytest.raises(IndexError):
-        r_list[5]
+class TestGetItem(object):
+    """Test ``__getitem__`` method."""
+
+    def test_invalid_index_type(self, redis_list):
+        """Should raise TypeError."""
+        with pytest.raises(TypeError):
+            redis_list['random_string']
+
+    def test_int_index(self, redis_list, str_list):
+        """Should return the same item as str_list does."""
+        index = random.randint(0, len(str_list) - 1)
+        assert redis_list[index] == str_list[index]
+
+    def test_int_index_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """Should return the same item as bytes_list does."""
+        index = random.randint(0, len(bytes_list) - 1)
+        assert redis_list_without_pickling[index] == bytes_list[index]
+
+    def test_index_out_of_range(self, redis_list):
+        """Should raise IndexError."""
+        with pytest.raises(IndexError):
+            assert redis_list[len(redis_list)]
+
+    def test_slice_index(self, redis_list, str_list):
+        """Should return the same items as str_list returns."""
+        assert redis_list[0:len(redis_list) - 1:1] == redis_list[0:len(str_list) - 1:1]
 
 
 def test_set_item(r):
