@@ -2,7 +2,6 @@ import pytest
 import random
 
 from redistypes import RedisList
-
 from tests.conftest import (
     REDIS_TEST_KEY_NAME,
     VAL_1,
@@ -177,30 +176,82 @@ class TestGetItem(object):
         assert redis_list[0:len(redis_list) - 1:1] == redis_list[0:len(str_list) - 1:1]
 
 
-def test_set_item(r):
-    r_list = RedisList(r, 'a', [1])
-    r_list[0] = 2
-    assert r_list[0] == 2
-    with pytest.raises(IndexError):
-        r_list[1] = 1
+class TestSetItem(object):
+    """Test ``__setitem__`` method."""
+
+    def test_invalid_index_type(self, redis_list):
+        """Should raise TypeError."""
+        with pytest.raises(TypeError):
+            redis_list['random_string']
+
+    def test_set_item(self, redis_list, str_list):
+        """Should be equal to str_list."""
+        index = random.randint(0, len(str_list) - 1)
+        redis_list[index] = VAL_3
+        str_list[index] = VAL_3
+        assert list(redis_list) == str_list
+
+    def test_set_item_without_pickling(self, redis_list_without_pickling, bytes_list):
+        """Should be equal to bytes_list."""
+        index = random.randint(0, len(bytes_list) - 1)
+        redis_list_without_pickling[index] = VAL_3
+        bytes_list[index] = VAL_3.encode()
+        assert list(redis_list_without_pickling) == bytes_list
+
+    def test_index_out_of_range(self, redis_list):
+        """Should raise IndexError."""
+        with pytest.raises(IndexError):
+            redis_list[len(redis_list)]
 
 
-def test_len(r):
-    r_list = RedisList(r, 'a', [1])
-    assert len(r_list) == 1
+class TestLen(object):
+    """Test ``__len__`` method."""
+
+    def test_empty_list(self, redis_empty_list):
+        """
+        Should return 0.
+
+        Casting to bool should return False.
+        """
+        assert len(redis_empty_list) == 0
+        assert bool(redis_empty_list) is False
+
+    def test_not_empty_list(self, redis_list, str_list):
+        """
+        Should return the same length as str_list does.
+
+        Casting to bool should return True.
+        """
+        assert len(redis_list) == len(str_list)
+        assert bool(redis_list) is True
 
 
-def test_iter(r):
-    r_list = RedisList(r, 'a', [1])
-    assert list(r_list) == [1]
+class TestEq(object):
+    """Test ``__eq__`` method."""
+
+    OTHER_HASH_NAME = 'other_hash_name'
+
+    def test_instance_of_another_class(self, redis_list, str_list):
+        """Should return False."""
+        assert redis_list != str_list and not isinstance(str_list, type(redis_list))
+
+    def test_two_different_redis_lists(self, r, redis_list, another_str_list):
+        """Should return False."""
+        other_redis_list = RedisList(r, self.OTHER_HASH_NAME, another_str_list)
+        assert redis_list != other_redis_list and isinstance(other_redis_list, type(redis_list))
+
+    def test_equal_key_names(self, r, redis_list):
+        """Should return True."""
+        other_redis_list = RedisList(r, REDIS_TEST_KEY_NAME)
+        assert redis_list == other_redis_list and other_redis_list.key_name == redis_list.key_name
+
+    def test_equal_items(self, r, redis_list, str_list):
+        """Should return True."""
+        other_redis_list = RedisList(r, self.OTHER_HASH_NAME, str_list)
+        assert redis_list == other_redis_list and list(redis_list) == list(other_redis_list) \
+            and redis_list.key_name != other_redis_list.key_name
 
 
-def test_repr(r):
-    r_list = RedisList(r, 'a', [1])
-    assert str(r_list) == 'RedisList: [1]'
-
-
-def test_object_is_not_changed(r):
-    r_list = RedisList(r, 'a', [{1: 1}])
-    r_list[0][1] = 2
-    assert r_list[0][1] == 1
+def test_repr(redis_list, str_list):
+    """Test ``__repr__`` method."""
+    assert str(redis_list) == '{0}: {1}'.format(type(redis_list).__name__, str_list)
