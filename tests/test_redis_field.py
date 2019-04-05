@@ -1,7 +1,6 @@
 import pytest
 
 from redistypes import IRedisField
-
 from tests.conftest import VAL_1
 
 
@@ -18,6 +17,7 @@ def model_with_redis_field(r):
     """Class with RedisField attribute."""
     class Model(object):
         redis_field = RedisTestField(r)
+
     return Model
 
 
@@ -26,6 +26,7 @@ def model_with_redis_field_without_pickling(r):
     """Class with RedisField attribute without pickling."""
     class Model(object):
         redis_field = RedisTestField(r, pickling=False)
+
     return Model
 
 

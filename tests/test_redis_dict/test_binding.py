@@ -1,7 +1,6 @@
 import pytest
 
 from redistypes import RedisDict
-
 from tests.conftest import REDIS_TEST_KEY_NAME, VAL_1, VAL_3
 from tests.test_redis_dict.conftest import KEY_1, KEY_3
 
@@ -161,7 +160,7 @@ class TestUpdate(object):
         self,
         redis_dict_without_pickling,
         bytes_dict,
-        another_str_dict
+        another_str_dict,
     ):
         """Should be equal to the merge of bytes_dict and encoded another_str_dict."""
         redis_dict_without_pickling.update(another_str_dict)
@@ -240,7 +239,7 @@ class TestLen(object):
         """
         Should return 0.
 
-        Casting to bool should be False.
+        Casting to bool should return False.
         """
         assert len(redis_empty_dict) == 0
         assert bool(redis_empty_dict) is False
@@ -249,7 +248,7 @@ class TestLen(object):
         """
         Should return length of str_dict.
 
-        Casting to bool should be True.
+        Casting to bool should return True.
         """
         assert len(redis_dict) == len(str_dict) == 2
         assert bool(redis_dict) is True
@@ -358,9 +357,5 @@ class TestEq(object):
 
 
 def test_repr(redis_dict, str_dict):
-    """
-    Test ``__repr__`` method.
-
-    Should return "RedisDict: {'KEY_1': 'VAL_1', 'KEY_2': 'VAL_2'}".
-    """
+    """Test ``__repr__`` method."""
     assert str(redis_dict) == '{0}: {1}'.format(type(redis_dict).__name__, str_dict)
