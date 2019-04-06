@@ -30,14 +30,15 @@ class RedisList(object):
         the iterable.
         """
         self.redis = redis_connection
-        if iterable:
-            pipe = self.redis.pipeline()
+        if iterable is not None:
             if not isinstance(iterable, collections.Iterable):
                 raise ValueError('values are not iterable')
+            pipe = self.redis.pipeline()
             pipe.delete(key_name)
-            if pickling:
-                iterable = map(dumps, iterable)
-            pipe.rpush(key_name, *iterable)
+            if iterable:
+                if pickling:
+                    iterable = map(dumps, iterable)
+                pipe.rpush(key_name, *iterable)
             pipe.execute()
         else:
             key_type = self.redis.type(key_name)
