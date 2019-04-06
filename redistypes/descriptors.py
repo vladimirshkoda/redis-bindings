@@ -68,13 +68,4 @@ class IRedisListField(IRedisField):
 
     def __set__(self, instance, value):
         """Set the attribute on the instance to the new value."""
-        if not isinstance(value, collections.Iterable):
-            raise ValueError('value is not iterable')
-        key_name = self.get_key_name(instance)
-        pipe = self.redis.pipeline()
-        pipe.delete(key_name)
-        if value:
-            if self.pickling:
-                value = map(dumps, value)
-            pipe.rpush(key_name, *value)
-        pipe.execute()
+        RedisList(self.redis, self.get_key_name(instance), value, self.pickling)

@@ -1,13 +1,3 @@
-import pytest
-
-
-def test_set_not_iterable(model_with_redis_field):
-    """Should raise ValueError."""
-    test_object = model_with_redis_field()
-    with pytest.raises(ValueError):
-        test_object.redis_field = 1
-
-
 def test_set_empty_list(r, redis_list, model_with_redis_field):
     """Should remove existing key in Redis."""
     test_object = model_with_redis_field()
