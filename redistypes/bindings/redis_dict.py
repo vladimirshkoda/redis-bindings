@@ -2,7 +2,7 @@
 
 import collections
 
-from ..pickling import dumps, loads
+from redistypes.pickling import dumps, loads
 
 REDIS_TYPE_HASH = b'hash'
 REDIS_TYPE_NONE = b'none'
@@ -135,9 +135,9 @@ class RedisDict(object):
 
     def update(self, other):
         """
-        Update the dictionary with the key/value pairs from ``other``, overwriting existing keys.
+        Update the dictionary with the key/value pairs from ``other``.
 
-        Return None.
+        Overwrites existing keys. Returns None.
         """
         if not isinstance(other, collections.Mapping):
             raise ValueError('values are not mapping')

@@ -4,7 +4,7 @@ import collections
 
 from redis import ResponseError
 
-from ..pickling import dumps, loads
+from redistypes.pickling import dumps, loads
 
 REDIS_TYPE_LIST = b'list'
 REDIS_TYPE_NONE = b'none'

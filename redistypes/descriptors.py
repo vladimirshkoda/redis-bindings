@@ -4,8 +4,6 @@ Redis type descriptors.
 Includes IRedisField, IRedisListField.
 """
 
-import collections
-
 from .bindings import RedisList
 from .pickling import dumps, loads
 
