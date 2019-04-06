@@ -64,7 +64,7 @@ class IRedisListField(IRedisField):
 
     def __get__(self, instance, owner):
         """Return the attribute value."""
-        return RedisList(self.redis, self.get_key_name(instance))
+        return RedisList(self.redis, self.get_key_name(instance), pickling=self.pickling)
 
     def __set__(self, instance, value):
         """Set the attribute on the instance to the new value."""
