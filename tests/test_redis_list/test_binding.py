@@ -24,6 +24,12 @@ class TestInit(object):
         with pytest.raises(TypeError):
             RedisList(r, REDIS_TEST_KEY_NAME)
 
+    def test_bind_to_bytes_list(self, r, str_list):
+        """Should raise ValueError."""
+        r.rpush(REDIS_TEST_KEY_NAME, *str_list)
+        with pytest.raises(ValueError):
+            list(RedisList(r, REDIS_TEST_KEY_NAME))
+
     def test_bind_to_none(self, r):
         """Should be equal to empty string."""
         redis_list = RedisList(r, REDIS_TEST_KEY_NAME)
@@ -51,6 +57,13 @@ class TestInit(object):
         with str_list.
         """
         assert list(redis_list_without_pickling) == bytes_list
+
+    def test_init_with_empty_list(self, r, str_list):
+        """Should override existing value with empty list by removing the key."""
+        r.rpush(REDIS_TEST_KEY_NAME, *str_list)
+        redis_list = RedisList(r, REDIS_TEST_KEY_NAME, [], pickling=False)
+        assert list(redis_list) == []
+        assert r.keys() == []
 
     def test_override_previous_list(self, r, str_list, another_str_list):
         """
