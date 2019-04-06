@@ -1,6 +1,6 @@
 import pytest
 
-from redistypes import RedisList
+from redistypes import RedisList, IRedisListField
 
 from tests.conftest import REDIS_TEST_KEY_NAME, VAL_1, VAL_2, VAL_3
 
@@ -55,3 +55,29 @@ def redis_list_without_pickling(r, str_list):
     RedisList: [b'VAL_1', b'VAL_2', b'VAL_2']
     """
     return RedisList(r, REDIS_TEST_KEY_NAME, str_list, pickling=False)
+
+
+class RedisTestListField(IRedisListField):
+    """IRedisListField implementation."""
+
+    def get_key_name(self, instance):
+        """Return Redis key name for the attribute."""
+        return REDIS_TEST_KEY_NAME
+
+
+@pytest.fixture
+def model_with_redis_field(r):
+    """Class with RedisListField attribute."""
+    class Model(object):
+        redis_field = RedisTestListField(r)
+
+    return Model
+
+
+@pytest.fixture
+def model_with_redis_field_without_pickling(r):
+    """Class with RedisField attribute without pickling."""
+    class Model(object):
+        redis_field = RedisTestListField(r, pickling=False)
+
+    return Model
