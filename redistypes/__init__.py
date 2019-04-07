@@ -6,11 +6,12 @@ is based on redis-py and includes RedisList, IRedisField and IRedisListField.
 """
 
 from .bindings import RedisDict, RedisList
-from .descriptors import IRedisField, IRedisListField
+from .descriptors import IRedisDictField, IRedisField, IRedisListField
 
 __all__ = [
     'RedisList',
     'RedisDict',
     'IRedisField',
     'IRedisListField',
+    'IRedisDictField',
 ]

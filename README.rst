@@ -21,6 +21,7 @@ Moreover, it provides some abstract classes as Redis descriptors:
 
 * IRedisField
 * IRedisListField
+* IRedisDictField
 
 The classes are abstract because it requires user to override ``get_key_name``
 method to define key name for Redis. Here is an example of how it can be

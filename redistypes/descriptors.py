@@ -4,12 +4,12 @@ Redis type descriptors.
 Includes IRedisField, IRedisListField.
 """
 
-from .bindings import RedisList
+from .bindings import RedisDict, RedisList
 from .pickling import dumps, loads
 
 
 class IRedisField(object):
-    """Basic Redis descriptor interface."""
+    """Abstract class for Basic Redis descriptor."""
 
     def __init__(self, redis_connection, pickling=True):
         """
@@ -58,7 +58,7 @@ class IRedisField(object):
 
 
 class IRedisListField(IRedisField):
-    """Redis list descriptor interface."""
+    """Abstract class for Redis list descriptor."""
 
     def __get__(self, instance, owner):
         """Return the attribute value."""
@@ -67,3 +67,15 @@ class IRedisListField(IRedisField):
     def __set__(self, instance, value):
         """Set the attribute on the instance to the new value."""
         RedisList(self.redis, self.get_key_name(instance), value, self.pickling)
+
+
+class IRedisDictField(IRedisField):
+    """Abstract class for Redis hash descriptor."""
+
+    def __get__(self, instance, owner):
+        """Return the attribute value."""
+        return RedisDict(self.redis, self.get_key_name(instance), pickling=self.pickling)
+
+    def __set__(self, instance, value):
+        """Set the attribute on the instance to the new value."""
+        RedisDict(self.redis, self.get_key_name(instance), value, self.pickling)

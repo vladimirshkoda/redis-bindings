@@ -32,16 +32,17 @@ class RedisDict(object):
         the iterable.
         """
         self.redis = redis_connection
-        if mapping:
+        if mapping is not None:
             if not isinstance(mapping, collections.Mapping):
                 raise ValueError('values are not mapping')
             pipe = self.redis.pipeline()
             pipe.delete(key_name)
-            if pickling:
-                mapping = {
-                    dumps(k): dumps(v) for k, v in mapping.items()
-                }
-            pipe.hmset(key_name, mapping)
+            if mapping:
+                if pickling:
+                    mapping = {
+                        dumps(k): dumps(v) for k, v in mapping.items()
+                    }
+                pipe.hmset(key_name, mapping)
             pipe.execute()
         else:
             key_type = self.redis.type(key_name)
