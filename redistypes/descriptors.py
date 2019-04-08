@@ -57,25 +57,27 @@ class IRedisField(object):
         self.name = name
 
 
-class IRedisListField(IRedisField):
+class IRedisDataStructureField(IRedisField):
+    """Generic abstract class for Redis data structure descriptor."""
+
+    data_structure = None
+
+    def __get__(self, instance, owner):
+        """Return the attribute value."""
+        return self.data_structure(self.redis, self.get_key_name(instance), pickling=self.pickling)
+
+    def __set__(self, instance, value):
+        """Set the attribute on the instance to the new value."""
+        self.data_structure(self.redis, self.get_key_name(instance), value, self.pickling)
+
+
+class IRedisListField(IRedisDataStructureField):
     """Abstract class for Redis list descriptor."""
 
-    def __get__(self, instance, owner):
-        """Return the attribute value."""
-        return RedisList(self.redis, self.get_key_name(instance), pickling=self.pickling)
-
-    def __set__(self, instance, value):
-        """Set the attribute on the instance to the new value."""
-        RedisList(self.redis, self.get_key_name(instance), value, self.pickling)
+    data_structure = RedisList
 
 
-class IRedisDictField(IRedisField):
+class IRedisDictField(IRedisDataStructureField):
     """Abstract class for Redis hash descriptor."""
 
-    def __get__(self, instance, owner):
-        """Return the attribute value."""
-        return RedisDict(self.redis, self.get_key_name(instance), pickling=self.pickling)
-
-    def __set__(self, instance, value):
-        """Set the attribute on the instance to the new value."""
-        RedisDict(self.redis, self.get_key_name(instance), value, self.pickling)
+    data_structure = RedisDict
