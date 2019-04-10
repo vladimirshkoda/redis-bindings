@@ -4,6 +4,8 @@ Redis type descriptors.
 Includes IRedisField, IRedisListField.
 """
 
+from weakref import WeakKeyDictionary
+
 from .bindings import RedisDict, RedisList
 from .pickling import dumps, loads
 
@@ -16,7 +18,7 @@ class IRedisField(object):
         Initialize Redis field descriptor.
 
         Accepts user data only as bytes, strings or numbers (ints, longs and floats). An attempt
-        to specify a key or a value as any other type will raise a DataError exception.
+        to set value as any other type will raise a DataError exception.
         """
         self.redis = redis_connection
         self.pickling = pickling
@@ -62,13 +64,34 @@ class IRedisDataStructureField(IRedisField):
 
     data_structure = None
 
+    def __init__(self, redis_connection, pickling=True):
+        """
+        Initialize data structure descriptor.
+
+        Creates a dictionary for cache: reference to data structures lives until the reference
+        to the instance is not the only one left.
+        """
+        super().__init__(redis_connection, pickling)
+        self.ds_references = WeakKeyDictionary()
+
     def __get__(self, instance, owner):
         """Return the attribute value."""
-        return self.data_structure(self.redis, self.get_key_name(instance), pickling=self.pickling)
+        if instance not in self.ds_references:
+            self.ds_references[instance] = self.data_structure(
+                self.redis,
+                self.get_key_name(instance),
+                pickling=self.pickling,
+            )
+        return self.ds_references[instance]
 
     def __set__(self, instance, value):
         """Set the attribute on the instance to the new value."""
-        self.data_structure(self.redis, self.get_key_name(instance), value, self.pickling)
+        self.ds_references[instance] = self.data_structure(
+            self.redis,
+            self.get_key_name(instance),
+            value,
+            self.pickling,
+        )
 
 
 class IRedisListField(IRedisDataStructureField):
