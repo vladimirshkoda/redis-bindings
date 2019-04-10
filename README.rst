@@ -59,7 +59,7 @@ implemented (can be found in `example.py <https://github.com/vladimirshkoda/redi
             ])
 
 
-    class RedisListField(IRedisListField, RedisField):
+    class RedisListField(RedisField, IRedisListField):
         """IRedisListField implementation."""
 
 

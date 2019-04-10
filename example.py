@@ -27,7 +27,7 @@ class RedisField(IRedisField):
         ])
 
 
-class RedisListField(IRedisListField, RedisField):
+class RedisListField(RedisField, IRedisListField):
     """IRedisListField implementation."""
 
 
