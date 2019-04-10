@@ -30,7 +30,6 @@ implemented (can be found in `example.py <https://github.com/vladimirshkoda/redi
 
 .. literalinclude:: example.py
     :language: python
-    :lineos:
 
 The defined above ``Student`` model has the following behaviour:
 
